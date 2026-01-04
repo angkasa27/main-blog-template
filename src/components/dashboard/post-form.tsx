@@ -13,6 +13,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { ImageUpload } from "./image-upload";
+import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { Loader2 } from "lucide-react";
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -127,11 +128,11 @@ export function PostForm({
         {/* Content */}
         <Field data-invalid={!!errors.content}>
           <FieldLabel htmlFor="content">Content *</FieldLabel>
-          <Textarea
-            id="content"
-            {...register("content")}
+          <TiptapEditor
+            content={watch("content") || ""}
+            onChange={(html) => setValue("content", html, { shouldValidate: true })}
             placeholder="Write your post content..."
-            rows={12}
+            error={!!errors.content}
           />
           {errors.content && (
             <FieldError>{errors.content.message}</FieldError>
