@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get("limit") || "3");
+
+    const posts = await prisma.post.findMany({
+      where: {
+        published: true,
+        featured: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        coverImage: true,
+        viewCount: true,
+        publishedAt: true,
+        featuredAt: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        featuredAt: "desc",
+      },
+      take: limit,
+    });
+
+    return NextResponse.json(posts);
+  } catch (error) {
+    console.error("Error fetching featured posts:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch featured posts" },
+      { status: 500 }
+    );
+  }
+}

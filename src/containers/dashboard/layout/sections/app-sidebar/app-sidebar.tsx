@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b h-16">BLOG DASHBOARD</SidebarHeader>
+      <SidebarHeader className="border-b h-16">LOGO PLACEHOLDER</SidebarHeader>
       <SidebarContent className="pt-1">
         <SidebarGroup>
           <SidebarMenu>

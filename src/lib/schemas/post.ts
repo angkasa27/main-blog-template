@@ -20,6 +20,7 @@ export const postSchema = z.object({
   content: z.string().min(10, "Content must be at least 10 characters"),
   coverImage: z.url("Must be a valid URL").optional().or(z.literal("")),
   published: z.boolean(),
+  featured: z.boolean(),
   // SEO fields
   metaTitle: z
     .string()

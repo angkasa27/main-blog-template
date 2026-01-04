@@ -13,9 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Archive, ArchiveRestore, Eye } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Archive,
+  ArchiveRestore,
+  Eye,
+  Star,
+} from "lucide-react";
 import type { PostWithAuthor } from "@/types/post";
-import { togglePublish } from "@/app/actions/posts";
+import { togglePublish, toggleFeatured } from "@/app/actions/posts";
 import { useRouter } from "next/navigation";
 import { DeleteConfirmation } from "@/components/dashboard/delete-confirmation";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -33,6 +40,9 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [featuredLoadingId, setFeaturedLoadingId] = useState<string | null>(
+    null
+  );
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     postId: string;
@@ -63,26 +73,50 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
     }
   };
 
+  const handleToggleFeatured = async (postId: string) => {
+    setFeaturedLoadingId(postId);
+    try {
+      const result = await toggleFeatured(postId);
+      if (result.success) {
+        // Update local state
+        setPosts(
+          posts.map((post) =>
+            post.id === postId ? { ...post, featured: !post.featured } : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to toggle featured:", error);
+    } finally {
+      setFeaturedLoadingId(null);
+      router.refresh();
+    }
+  };
+
   if (posts.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center">
         <p className="text-muted-foreground">
           No posts found. Create your first post to get started!
         </p>
-        <Link href="/dashboard/posts/new">
-          <Button className="mt-4">Create Post</Button>
-        </Link>
+        <Button
+          nativeButton={false}
+          className="mt-4"
+          render={<Link href="/dashboard/posts/new">Create Post</Link>}
+        />
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-lg border bg-card overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Featured</TableHead>
+            <TableHead>Views</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Updated</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -103,6 +137,23 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
                 <Badge variant={post.published ? "default" : "secondary"}>
                   {post.published ? "Published" : "Draft"}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                <Button
+                  size="sm"
+                  variant={post.featured ? "default" : "outline"}
+                  onClick={() => handleToggleFeatured(post.id)}
+                  disabled={featuredLoadingId === post.id}
+                  className="gap-1"
+                >
+                  <Star
+                    className={`h-4 w-4 ${post.featured ? "fill-current" : ""}`}
+                  />
+                  {post.featured ? "Featured" : "Feature"}
+                </Button>
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {(post.viewCount ?? 0).toLocaleString()}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDate(post.createdAt, "d MMMM yyyy, HH:mm")}
@@ -162,6 +213,7 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
                         <Button
                           size="sm"
                           variant="secondary"
+                          nativeButton={false}
                           render={
                             <Link href={`/dashboard/posts/${post.id}/edit`}>
                               <Pencil className="h-4 w-4" />

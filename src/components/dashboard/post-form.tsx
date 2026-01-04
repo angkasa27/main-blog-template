@@ -16,7 +16,7 @@ import {
 import { ImageUpload } from "./image-upload";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { Loader2 } from "lucide-react";
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { usePreventNavigation } from "@/hooks/use-prevent-navigation";
 import { useConfirm } from "@/hooks/use-confirm-dialog";
@@ -49,14 +49,17 @@ export function PostForm({
       metaTitle: "",
       metaDescription: "",
       published: false,
+      featured: false,
     },
   });
 
-  const router = useRouter();
   const { confirm } = useConfirm();
 
   // Prevent navigation when form has unsaved changes
-  usePreventNavigation(isDirty && !isSubmitting, "You have unsaved changes. Are you sure you want to leave?");
+  usePreventNavigation(
+    isDirty && !isSubmitting,
+    "You have unsaved changes. Are you sure you want to leave?"
+  );
 
   // Warn before leaving page with unsaved changes
   useEffect(() => {
@@ -78,12 +81,13 @@ export function PostForm({
 
     const handlePopState = async (e: PopStateEvent) => {
       e.preventDefault();
-      
+
       const confirmLeave = await confirm({
         title: "Unsaved Changes",
-        description: "You have unsaved changes. Are you sure you want to leave?",
+        description:
+          "You have unsaved changes. Are you sure you want to leave?",
       });
-      
+
       if (!confirmLeave) {
         window.history.pushState(null, "", window.location.href);
       } else {
@@ -129,22 +133,14 @@ export function PostForm({
             }}
             placeholder="Enter post title"
           />
-          {errors.title && (
-            <FieldError>{errors.title.message}</FieldError>
-          )}
+          {errors.title && <FieldError>{errors.title.message}</FieldError>}
         </Field>
 
         {/* Slug */}
         <Field data-invalid={!!errors.slug}>
           <FieldLabel htmlFor="slug">Slug *</FieldLabel>
-          <Input
-            id="slug"
-            {...register("slug")}
-            placeholder="post-url-slug"
-          />
-          {errors.slug && (
-            <FieldError>{errors.slug.message}</FieldError>
-          )}
+          <Input id="slug" {...register("slug")} placeholder="post-url-slug" />
+          {errors.slug && <FieldError>{errors.slug.message}</FieldError>}
         </Field>
 
         {/* Cover Image */}
@@ -172,9 +168,7 @@ export function PostForm({
             placeholder="Brief description (optional)"
             rows={3}
           />
-          {errors.excerpt && (
-            <FieldError>{errors.excerpt.message}</FieldError>
-          )}
+          {errors.excerpt && <FieldError>{errors.excerpt.message}</FieldError>}
         </Field>
 
         {/* Content */}
@@ -182,15 +176,14 @@ export function PostForm({
           <FieldLabel htmlFor="content">Content *</FieldLabel>
           <TiptapEditor
             content={watch("content") || ""}
-            onChange={(html) => setValue("content", html, { shouldValidate: true })}
+            onChange={(html) =>
+              setValue("content", html, { shouldValidate: true })
+            }
             placeholder="Write your post content..."
             error={!!errors.content}
           />
-          {errors.content && (
-            <FieldError>{errors.content.message}</FieldError>
-          )}
+          {errors.content && <FieldError>{errors.content.message}</FieldError>}
         </Field>
-
       </FieldGroup>
 
       {/* SEO Fields */}
@@ -230,6 +223,47 @@ export function PostForm({
         </FieldGroup>
       </div>
 
+      {/* Publishing Options */}
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold mb-4">Publishing Options</h3>
+        <FieldGroup>
+          <Field>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="published"
+                {...register("published")}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <div>
+                <FieldLabel htmlFor="published">Publish this post</FieldLabel>
+                <FieldDescription>
+                  Make this post visible to the public
+                </FieldDescription>
+              </div>
+            </div>
+          </Field>
+
+          <Field>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="featured"
+                {...register("featured")}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <div>
+                <FieldLabel htmlFor="featured">Feature this post</FieldLabel>
+                <FieldDescription>
+                  Display this post prominently on the homepage
+                </FieldDescription>
+              </div>
+            </div>
+          </Field>
+        </FieldGroup>
+      </div>
+
+      {/* 
       {/* Submit Button */}
       <div className="flex gap-4">
         <Button type="submit" disabled={isSubmitting} className="min-w-32">

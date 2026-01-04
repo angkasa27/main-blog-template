@@ -87,6 +87,11 @@ model Post {
   published   Boolean   @default(false)
   publishedAt DateTime?
 
+  // Featured posts and view tracking
+  featured    Boolean   @default(false)
+  featuredAt  DateTime?
+  viewCount   Int       @default(0)
+
   // SEO fields
   metaTitle       String?
   metaDescription String?
@@ -103,5 +108,7 @@ model Post {
   @@index([slug])
   @@index([authorId])
   @@index([published, publishedAt])
+  @@index([featured, publishedAt])
+  @@index([published, viewCount])
   @@map("post")
 }

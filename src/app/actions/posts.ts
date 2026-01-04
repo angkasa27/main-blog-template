@@ -24,6 +24,7 @@ export async function createPost(data: PostFormData): Promise<{ success: boolean
         ...validated,
         authorId: session.user.id,
         publishedAt: validated.published ? new Date() : null,
+        featuredAt: validated.featured ? new Date() : null,
       },
     });
 
@@ -130,6 +131,37 @@ export async function togglePublish(id: string): Promise<{ success: boolean; err
   } catch (error) {
     console.error("Toggle publish error:", error);
     return { success: false, error: "Failed to toggle publish status" };
+  }
+}
+
+export async function toggleFeatured(id: string): Promise<{ success: boolean; featured?: boolean; error?: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing || existing.authorId !== session.user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        featured: !existing.featured,
+        featuredAt: !existing.featured ? new Date() : null,
+      },
+    });
+
+    revalidatePath("/dashboard/posts");
+    revalidatePath("/");
+    revalidatePath("/blog");
+
+    return { success: true, featured: post.featured };
+  } catch (error) {
+    console.error("Toggle featured error:", error);
+    return { success: false, error: "Failed to toggle featured status" };
   }
 }
 

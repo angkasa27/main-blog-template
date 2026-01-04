@@ -30,6 +30,7 @@ export function RecentPosts({ posts }: RecentPostsProps) {
           No posts yet. Create your first post to get started!
         </p>
         <Button
+          nativeButton={false}
           className="mt-4"
           render={<Link href="/dashboard/posts/new">Create Post</Link>}
         />
@@ -74,6 +75,7 @@ export function RecentPosts({ posts }: RecentPostsProps) {
                       <Button
                         size="sm"
                         variant="secondary"
+                        nativeButton={false}
                         render={
                           <Link href={`/dashboard/posts/${post.id}/edit`}>
                             <Pencil className="h-4 w-4" />
