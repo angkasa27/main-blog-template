@@ -159,7 +159,11 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        <Button variant="outline" onClick={handleSignOut} className="gap-2">
+        <Button
+          variant="outline"
+          onClick={() => router.push("/")}
+          className="gap-2"
+        >
           <span className="hidden md:block">{"Open "}</span>Website{" "}
           <ArrowUpRight className="h-4 w-4" />
         </Button>
