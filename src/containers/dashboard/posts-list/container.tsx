@@ -1,10 +1,6 @@
-"use client";
-
-import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { Filters } from "./sections/filters";
 import { PostsTable } from "./sections/table";
 import type { PostWithAuthor } from "@/types/post";
 
@@ -13,18 +9,6 @@ interface PostsListContainerProps {
 }
 
 export function PostsListContainer({ posts }: PostsListContainerProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts;
-    
-    const query = searchQuery.toLowerCase();
-    return posts.filter(post =>
-      post.title.toLowerCase().includes(query) ||
-      post.content.toLowerCase().includes(query)
-    );
-  }, [posts, searchQuery]);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,9 +26,7 @@ export function PostsListContainer({ posts }: PostsListContainerProps) {
         </Link>
       </div>
 
-      <Filters onSearch={setSearchQuery} />
-
-      <PostsTable posts={filteredPosts} />
+      <PostsTable posts={posts} />
     </div>
   );
 }

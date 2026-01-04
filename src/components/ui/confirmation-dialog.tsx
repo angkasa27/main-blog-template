@@ -11,7 +11,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, LucideIcon } from "lucide-react";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -20,6 +20,12 @@ interface ConfirmationDialogProps {
   description?: string;
   onConfirm: () => void;
   onCancel?: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  confirmVariant?: "default" | "destructive" | "outline";
+  cancelVariant?: "default" | "destructive" | "outline";
+  icon?: LucideIcon;
+  iconVariant?: "default" | "destructive";
 }
 
 export function ConfirmationDialog({
@@ -29,20 +35,34 @@ export function ConfirmationDialog({
   description = "This action cannot be undone.",
   onConfirm,
   onCancel,
+  confirmText = "Continue",
+  cancelText = "Cancel",
+  confirmVariant = "default",
+  cancelVariant = "default",
+  icon: Icon = CircleAlert,
+  iconVariant = "default",
 }: ConfirmationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia>
-            <CircleAlert />
+            <Icon
+              className={
+                iconVariant === "destructive" ? "text-destructive" : ""
+              }
+            />
           </AlertDialogMedia>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Continue</AlertDialogAction>
+          <AlertDialogCancel variant={cancelVariant} onClick={onCancel}>
+            {cancelText}
+          </AlertDialogCancel>
+          <AlertDialogAction variant={confirmVariant} onClick={onConfirm}>
+            {confirmText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

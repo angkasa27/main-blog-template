@@ -2,23 +2,33 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { deletePost } from "@/app/actions/posts";
 
-interface DeleteConfirmationProps {
+interface PostDeleteConfirmationProps {
   postId: string;
   postTitle: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function DeleteConfirmation({
+export function PostDeleteConfirmation({
   postId,
   postTitle,
   isOpen,
   onClose,
-}: DeleteConfirmationProps) {
+}: PostDeleteConfirmationProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -41,26 +51,22 @@ export function DeleteConfirmation({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="fixed inset-0 bg-black/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div className="relative max-w-md rounded-lg bg-card p-6 shadow-xl">
-        <h2 className="text-lg font-semibold">Delete Post</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Are you sure you want to delete &ldquo;{postTitle}&rdquo;? This action
-          cannot be undone.
-        </p>
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogMedia>
+            <AlertTriangle className="text-destructive" />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Delete Post</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete &ldquo;{postTitle}&rdquo;? This action
+            cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
@@ -73,9 +79,9 @@ export function DeleteConfirmation({
             ) : (
               "Delete"
             )}
-          </Button>
-        </div>
-      </div>
-    </div>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

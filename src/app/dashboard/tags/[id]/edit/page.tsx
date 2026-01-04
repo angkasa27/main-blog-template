@@ -1,5 +1,5 @@
 import { getTag } from "@/app/actions/tags";
-import { TagForm } from "@/components/dashboard/tag-form";
+import { TagEditContainer } from "@/containers/dashboard/tag-edit";
 import { notFound } from "next/navigation";
 
 export default async function EditTagPage({
@@ -15,9 +15,8 @@ export default async function EditTagPage({
   }
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">Edit Tag</h1>
-      <TagForm tag={result.data} />
+    <div className="p-6">
+      <TagEditContainer tag={result.data} />
     </div>
   );
 }

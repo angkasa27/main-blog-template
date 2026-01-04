@@ -1,18 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Pencil,
   Trash2,
@@ -24,13 +16,16 @@ import {
 import type { PostWithAuthor } from "@/types/post";
 import { togglePublish, toggleFeatured } from "@/app/actions/posts";
 import { useRouter } from "next/navigation";
-import { DeleteConfirmation } from "@/components/dashboard/delete-confirmation";
+import { PostDeleteConfirmation } from "@/components/dashboard/post-delete-confirmation";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable, type FilterConfig } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 
 interface PostsTableProps {
   posts: PostWithAuthor[];
@@ -53,7 +48,7 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
     postTitle: "",
   });
 
-  const handleTogglePublish = async (postId: string) => {
+  const handleTogglePublish = useCallback(async (postId: string) => {
     setLoadingId(postId);
     try {
       const result = await togglePublish(postId);
@@ -71,9 +66,9 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
       setLoadingId(null);
       router.refresh();
     }
-  };
+  }, [posts, router]);
 
-  const handleToggleFeatured = async (postId: string) => {
+  const handleToggleFeatured = useCallback(async (postId: string) => {
     setFeaturedLoadingId(postId);
     try {
       const result = await toggleFeatured(postId);
@@ -91,168 +86,240 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
       setFeaturedLoadingId(null);
       router.refresh();
     }
-  };
+  }, [posts, router]);
 
-  if (posts.length === 0) {
-    return (
-      <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          No posts found. Create your first post to get started!
-        </p>
-        <Button
-          nativeButton={false}
-          className="mt-4"
-          render={<Link href="/dashboard/posts/new">Create Post</Link>}
-        />
-      </div>
-    );
-  }
+  const columns = useMemo<ColumnDef<PostWithAuthor>[]>(
+    () => [
+      {
+        accessorKey: "title",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Title" />
+        ),
+        cell: ({ row }) => (
+          <Link
+            href={`/dashboard/posts/${row.original.id}/edit`}
+            className="hover:underline font-medium"
+          >
+            {row.getValue("title")}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "published",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant={row.getValue("published") ? "default" : "secondary"}>
+            {row.getValue("published") ? "Published" : "Draft"}
+          </Badge>
+        ),
+        filterFn: (row, id, value) => {
+          if (value === "all") return true;
+          if (value === "published") return row.getValue(id) === true;
+          if (value === "draft") return row.getValue(id) === false;
+          return true;
+        },
+      },
+      {
+        accessorKey: "featured",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Featured" />
+        ),
+        cell: ({ row }) => (
+          <Button
+            size="sm"
+            variant={row.original.featured ? "default" : "outline"}
+            onClick={() => handleToggleFeatured(row.original.id)}
+            disabled={featuredLoadingId === row.original.id}
+            className="gap-1"
+          >
+            <Star
+              className={`h-4 w-4 ${row.original.featured ? "fill-current" : ""}`}
+            />
+            {row.original.featured ? "Featured" : "Feature"}
+          </Button>
+        ),
+        filterFn: (row, id, value) => {
+          if (value === "all") return true;
+          if (value === "featured") return row.getValue(id) === true;
+          if (value === "not-featured") return row.getValue(id) === false;
+          return true;
+        },
+      },
+      {
+        accessorKey: "viewCount",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Views" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {(row.getValue("viewCount") ?? 0).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Created" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {formatDate(row.getValue("createdAt"), "d MMM yyyy")}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "updatedAt",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Updated" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {formatDate(row.getValue("updatedAt"), "d MMM yyyy")}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <ButtonGroup>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      nativeButton={false}
+                      size="sm"
+                      variant="secondary"
+                      disabled={!row.original.published}
+                      render={
+                        <Link
+                          href={`/blog/${row.original.slug}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      }
+                    />
+                  }
+                />
+                <TooltipContent>View</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      onClick={() => handleTogglePublish(row.original.id)}
+                      variant="secondary"
+                      disabled={loadingId === row.original.id}
+                    >
+                      {row.original.published ? (
+                        <Archive className="h-4 w-4" />
+                      ) : (
+                        <ArchiveRestore className="h-4 w-4" />
+                      )}
+                    </Button>
+                  }
+                />
+                <TooltipContent>
+                  {row.original.published ? "Unpublish" : "Publish"}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      nativeButton={false}
+                      render={
+                        <Link href={`/dashboard/posts/${row.original.id}/edit`}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      }
+                    />
+                  }
+                />
+                <TooltipContent>Edit</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        setDeleteDialog({
+                          isOpen: true,
+                          postId: row.original.id,
+                          postTitle: row.original.title,
+                        })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  }
+                />
+                <TooltipContent>Delete</TooltipContent>
+              </Tooltip>
+            </ButtonGroup>
+          </div>
+        ),
+      },
+    ],
+    [featuredLoadingId, loadingId, handleToggleFeatured, handleTogglePublish]
+  );
+
+  const filters: FilterConfig[] = [
+    {
+      columnId: "published",
+      label: "Status",
+      options: [
+        { label: "All Status", value: "all" },
+        { label: "Published", value: "published" },
+        { label: "Draft", value: "draft" },
+      ],
+    },
+    {
+      columnId: "featured",
+      label: "Featured",
+      options: [
+        { label: "All Posts", value: "all" },
+        { label: "Featured", value: "featured" },
+        { label: "Not Featured", value: "not-featured" },
+      ],
+    },
+  ];
+
+  const emptyState = (
+    <div className="rounded-lg border bg-card p-8 text-center">
+      <p className="text-muted-foreground">
+        No posts found. Create your first post to get started!
+      </p>
+      <Button
+        nativeButton={false}
+        className="mt-4"
+        render={<Link href="/dashboard/posts/new">Create Post</Link>}
+      />
+    </div>
+  );
 
   return (
-    <div className="rounded-lg border bg-card overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Featured</TableHead>
-            <TableHead>Views</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Updated</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {posts.map((post) => (
-            <TableRow key={post.id}>
-              <TableCell className="font-medium">
-                <Link
-                  href={`/dashboard/posts/${post.id}/edit`}
-                  className="hover:underline"
-                >
-                  {post.title}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <Badge variant={post.published ? "default" : "secondary"}>
-                  {post.published ? "Published" : "Draft"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Button
-                  size="sm"
-                  variant={post.featured ? "default" : "outline"}
-                  onClick={() => handleToggleFeatured(post.id)}
-                  disabled={featuredLoadingId === post.id}
-                  className="gap-1"
-                >
-                  <Star
-                    className={`h-4 w-4 ${post.featured ? "fill-current" : ""}`}
-                  />
-                  {post.featured ? "Featured" : "Feature"}
-                </Button>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {(post.viewCount ?? 0).toLocaleString()}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {formatDate(post.createdAt, "d MMMM yyyy, HH:mm")}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {formatDate(post.updatedAt, "d MMMM yyyy, HH:mm")}
-              </TableCell>
-              <TableCell className="flex justify-end">
-                <ButtonGroup>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          nativeButton={false}
-                          size="sm"
-                          variant="secondary"
-                          disabled={!post.published}
-                          render={
-                            <Link
-                              href={`/blog/${post.slug}`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          }
-                        />
-                      }
-                    />
-                    <TooltipContent>View</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          size="sm"
-                          onClick={() => handleTogglePublish(post.id)}
-                          variant="secondary"
-                          disabled={loadingId === post.id}
-                          title={post.published ? "Unpublish" : "Publish"}
-                        >
-                          {post.published ? (
-                            <Archive className="h-4 w-4" />
-                          ) : (
-                            <ArchiveRestore className="h-4 w-4" />
-                          )}
-                        </Button>
-                      }
-                    />
-                    <TooltipContent>
-                      {post.published ? "Unpublish" : "Publish"}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          nativeButton={false}
-                          render={
-                            <Link href={`/dashboard/posts/${post.id}/edit`}>
-                              <Pencil className="h-4 w-4" />
-                            </Link>
-                          }
-                        />
-                      }
-                    />
-                    <TooltipContent>Edit</TooltipContent>
-                  </Tooltip>
+    <>
+      <DataTable
+        columns={columns}
+        data={posts}
+        searchPlaceholder="Search posts..."
+        filters={filters}
+        pageSize={10}
+        emptyState={emptyState}
+      />
 
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() =>
-                            setDeleteDialog({
-                              isOpen: true,
-                              postId: post.id,
-                              postTitle: post.title,
-                            })
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                    <TooltipContent>Delete</TooltipContent>
-                  </Tooltip>
-                </ButtonGroup>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <DeleteConfirmation
+      <PostDeleteConfirmation
         postId={deleteDialog.postId}
         postTitle={deleteDialog.postTitle}
         isOpen={deleteDialog.isOpen}
@@ -260,6 +327,6 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
           setDeleteDialog({ isOpen: false, postId: "", postTitle: "" })
         }
       />
-    </div>
+    </>
   );
 }
