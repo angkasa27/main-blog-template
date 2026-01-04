@@ -22,6 +22,11 @@ export async function GET(request: NextRequest): Promise<Response> {
               image: true,
             },
           },
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
         },
         orderBy: { publishedAt: "desc" },
         skip,

@@ -3,9 +3,10 @@ import { CldImage } from "next-cloudinary";
 import { formatDate } from "@/lib/utils";
 import { formatISO } from "date-fns";
 import type { PostWithAuthor } from "@/types/post";
+import { TagBadge } from "@/components/blog/tag-badge";
 
 interface HeaderProps {
-  post: PostWithAuthor;
+  post: PostWithAuthor & { tags?: Array<{ tag: { id: string; name: string; slug: string } }> };
 }
 
 export function Header({ post }: HeaderProps) {
@@ -27,6 +28,19 @@ export function Header({ post }: HeaderProps) {
             {post.publishedAt ? formatDate(post.publishedAt) : formatDate(post.createdAt)}
           </time>
         </div>
+
+        {post.tags && post.tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {post.tags.map(({ tag }) => (
+              <TagBadge
+                key={tag.id}
+                name={tag.name}
+                slug={tag.slug}
+                href={`/blog/tags/${tag.slug}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {post.coverImage && (

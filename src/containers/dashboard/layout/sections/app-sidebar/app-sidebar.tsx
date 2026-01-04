@@ -8,6 +8,7 @@ import {
   LogOut,
   LucideIcon,
   PanelRightClose,
+  Tags,
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,11 @@ const data: Menu = [
         title: "Posts",
         url: "/dashboard/posts",
         icon: FileText,
+      },
+      {
+        title: "Tags",
+        url: "/dashboard/tags",
+        icon: Tags,
       },
     ],
   },

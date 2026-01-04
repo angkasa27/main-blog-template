@@ -4,6 +4,7 @@ import { CldImage } from "next-cloudinary";
 import type { PostListItem } from "@/types/post";
 import { formatDate } from "@/lib/utils";
 import { formatISO } from "date-fns";
+import { TagBadge } from "./tag-badge";
 
 interface PostCardProps {
   post: PostListItem;
@@ -36,6 +37,19 @@ export function PostCard({ post }: PostCardProps) {
           <p className="mb-4 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
             {post.excerpt}
           </p>
+        )}
+
+        {post.tags && post.tags.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {post.tags.map(({ tag }) => (
+              <TagBadge
+                key={tag.id}
+                name={tag.name}
+                slug={tag.slug}
+                href={`/blog/tags/${tag.slug}`}
+              />
+            ))}
+          </div>
         )}
         
         <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-500">

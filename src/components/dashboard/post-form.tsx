@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { postSchema, type PostFormData } from "@/lib/schemas/post";
 import { Button } from "@/components/ui/button";
@@ -17,21 +17,28 @@ import { ImageUpload } from "./image-upload";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { Loader2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { usePreventNavigation } from "@/hooks/use-prevent-navigation";
 import { useConfirm } from "@/hooks/use-confirm-dialog";
+import { TagSelector } from "./tag-selector";
+import { Tag } from "@/types/tag";
 
 interface PostFormProps {
   defaultValues?: Partial<PostFormData>;
   onSubmit: (data: PostFormData) => Promise<void>;
   submitLabel?: string;
+  tags?: Tag[];
 }
 
 export function PostForm({
   defaultValues,
   onSubmit,
   submitLabel = "Create Post",
+  tags = [],
 }: PostFormProps) {
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    defaultValues?.tagIds || []
+  );
+
   const {
     register,
     handleSubmit,
@@ -50,6 +57,7 @@ export function PostForm({
       metaDescription: "",
       published: false,
       featured: false,
+      tagIds: [],
     },
   });
 
@@ -118,8 +126,27 @@ export function PostForm({
     }
   };
 
+  // Handle tag selection changes
+  const handleTagsChange = (tagIds: string[]) => {
+    setSelectedTagIds(tagIds);
+    setValue("tagIds", tagIds, { shouldDirty: true });
+  };
+
+  // Sync selected tags with form state on mount
+  useEffect(() => {
+    if (defaultValues?.tagIds) {
+      setSelectedTagIds(defaultValues.tagIds);
+      setValue("tagIds", defaultValues.tagIds);
+    }
+  }, [defaultValues?.tagIds, setValue]);
+
+  const handleFormSubmit = async (data: PostFormData) => {
+    // Ensure tagIds are included in submission
+    await onSubmit({ ...data, tagIds: selectedTagIds });
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <FieldGroup>
         {/* Title */}
         <Field data-invalid={!!errors.title}>
@@ -221,6 +248,22 @@ export function PostForm({
             )}
           </Field>
         </FieldGroup>
+      </div>
+
+      {/* Tags */}
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold mb-4">Tags</h3>
+        <Field>
+          <FieldLabel>Select Tags</FieldLabel>
+          <FieldDescription>
+            Choose tags to categorize this post
+          </FieldDescription>
+          <TagSelector
+            tags={tags}
+            selectedTagIds={selectedTagIds}
+            onTagsChange={handleTagsChange}
+          />
+        </Field>
       </div>
 
       {/* Publishing Options */}

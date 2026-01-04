@@ -25,6 +25,13 @@ export async function createPost(data: PostFormData): Promise<{ success: boolean
         authorId: session.user.id,
         publishedAt: validated.published ? new Date() : null,
         featuredAt: validated.featured ? new Date() : null,
+        tags: validated.tagIds
+          ? {
+              create: validated.tagIds.map((tagId) => ({
+                tagId,
+              })),
+            }
+          : undefined,
       },
     });
 
@@ -58,7 +65,17 @@ export async function updatePost(id: string, data: PostUpdateData): Promise<{ su
 
     const post = await prisma.post.update({
       where: { id },
-      data: validated,
+      data: {
+        ...validated,
+        tags: validated.tagIds
+          ? {
+              deleteMany: {}, // Remove all existing tags
+              create: validated.tagIds.map((tagId) => ({
+                tagId,
+              })),
+            }
+          : undefined,
+      },
     });
 
     revalidatePath("/dashboard/posts");

@@ -24,6 +24,11 @@ export async function BlogDetailContainer({ slug }: BlogDetailContainerProps) {
           image: true,
         },
       },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   });
 

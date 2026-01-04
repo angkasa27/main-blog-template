@@ -14,11 +14,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     orderBy: { updatedAt: "desc" },
   });
 
+  // Get all tags
+  const tags = await prisma.tag.findMany({
+    select: {
+      slug: true,
+      updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
   const postUrls = posts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: post.updatedAt,
     changeFrequency: "weekly" as const,
     priority: 0.7,
+  }));
+
+  const tagUrls = tags.map((tag) => ({
+    url: `${baseUrl}/blog/tags/${tag.slug}`,
+    lastModified: tag.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
   }));
 
   return [
@@ -35,5 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     ...postUrls,
+    ...tagUrls,
   ];
 }

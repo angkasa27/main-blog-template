@@ -21,6 +21,7 @@ export const postSchema = z.object({
   coverImage: z.url("Must be a valid URL").optional().or(z.literal("")),
   published: z.boolean(),
   featured: z.boolean(),
+  tagIds: z.array(z.string()).optional(),
   // SEO fields
   metaTitle: z
     .string()

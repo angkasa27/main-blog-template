@@ -25,6 +25,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       author: {
         select: { id: true, name: true, email: true, image: true },
       },
+      tags: {
+        select: { tagId: true },
+      },
     },
   });
 

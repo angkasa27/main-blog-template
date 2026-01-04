@@ -75,99 +75,95 @@ export function Header() {
     //   </div>
     // </header>
 
-    <header className="flex h-16 shrink-0 items-center gap-2 ease-linear border-b">
-      <div className="flex items-center gap-2 px-4 w-full">
-        {isMobile ? (
-          <div className="flex-1">
-            <SidebarTrigger />
-          </div>
-        ) : (
-          // <Breadcrumb className="flex-1">
-          //   <BreadcrumbList>
-          //     <BreadcrumbItem className="hidden md:block">
-          //       <BreadcrumbLink href="#">
-          //         Building Your Application
-          //       </BreadcrumbLink>
-          //     </BreadcrumbItem>
-          //     <BreadcrumbSeparator className="hidden md:block" />
-          //     <BreadcrumbItem>
-          //       <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-          //     </BreadcrumbItem>
-          //   </BreadcrumbList>
-          // </Breadcrumb>
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold">CMS Dashboard</h1>
-          </div>
-        )}
+    <header className="flex h-16 shrink-0 items-center gap-2 ease-linear px-4 border-b">
+      {isMobile ? (
+        <div className="flex-1">
+          <SidebarTrigger />
+        </div>
+      ) : (
+        // <Breadcrumb className="flex-1">
+        //   <BreadcrumbList>
+        //     <BreadcrumbItem className="hidden md:block">
+        //       <BreadcrumbLink href="#">
+        //         Building Your Application
+        //       </BreadcrumbLink>
+        //     </BreadcrumbItem>
+        //     <BreadcrumbSeparator className="hidden md:block" />
+        //     <BreadcrumbItem>
+        //       <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+        //     </BreadcrumbItem>
+        //   </BreadcrumbList>
+        // </Breadcrumb>
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">CMS Dashboard</h1>
+        </div>
+      )}
 
-        {session?.user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="wrap"
-                  className="flex items-center gap-2 text-left text-sm p-2"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage alt={session.user.name} />
-                    <AvatarFallback className="rounded-lg">
-                      {getInitials(session.user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">
-                      {session.user.name}
-                    </span>
-                    <span className="truncate text-xs">
-                      {session.user.email}
-                    </span>
-                  </div>
-                </Button>
-              }
-            />
-            <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-              align={isMobile ? "center" : "start"}
-            >
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <Sparkles />
-                  Upgrade to Pro
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <BadgeCheck />
-                  Account
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+      {session?.user && (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="wrap"
+                className="flex items-center gap-2 text-left text-sm p-2"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage alt={session.user.name} />
+                  <AvatarFallback className="rounded-lg">
+                    {getInitials(session.user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden md:grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">
+                    {session.user.name}
+                  </span>
+                  <span className="truncate text-xs">{session.user.email}</span>
+                </div>
+              </Button>
+            }
+          />
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            align={isMobile ? "center" : "start"}
+          >
+            <DropdownMenuGroup>
               <DropdownMenuItem>
-                <LogOut />
-                Log out
+                <Sparkles />
+                Upgrade to Pro
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        <Button
-          variant="outline"
-          onClick={() => router.push("/")}
-          className="gap-2"
-        >
-          <span className="hidden md:block">{"Open "}</span>Website{" "}
-          <ArrowUpRight className="h-4 w-4" />
-        </Button>
-      </div>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <BadgeCheck />
+                Account
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CreditCard />
+                Billing
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Bell />
+                Notifications
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      <Button
+        variant="outline"
+        onClick={() => router.push("/")}
+        className="gap-2"
+      >
+        <span className="hidden md:block">{"Open "}</span>Website{" "}
+        <ArrowUpRight className="h-4 w-4" />
+      </Button>
     </header>
   );
 }

@@ -17,6 +17,11 @@ export async function BlogListContainer() {
             image: true,
           },
         },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
       },
     }),
     prisma.post.count({ where: { published: true } }),
