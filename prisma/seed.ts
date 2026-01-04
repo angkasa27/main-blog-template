@@ -5,15 +5,17 @@ async function main() {
 
   // Check if there's at least one user
   const userCount = await prisma.user.count();
-  
+
   if (userCount === 0) {
-    console.log("❌ No users found. Please create a user account first (sign up).");
+    console.log(
+      "❌ No users found. Please create a user account first (sign up)."
+    );
     return;
   }
 
   // Get the first user to use as author
   const user = await prisma.user.findFirst();
-  
+
   if (!user) {
     console.log("❌ Could not find a user.");
     return;
@@ -26,7 +28,8 @@ async function main() {
     {
       title: "Getting Started with Next.js 16 and Better Auth",
       slug: "getting-started-nextjs-16-better-auth",
-      excerpt: "Learn how to build a modern web application with Next.js 16 App Router and Better Auth for authentication.",
+      excerpt:
+        "Learn how to build a modern web application with Next.js 16 App Router and Better Auth for authentication.",
       content: `# Getting Started with Next.js 16 and Better Auth
 
 Welcome to this comprehensive guide on building modern web applications with Next.js 16 and Better Auth!
@@ -61,18 +64,21 @@ export const auth = betterAuth({
 ## Conclusion
 
 With Next.js 16 and Better Auth, you have a solid foundation for building secure, performant web applications.`,
-      coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=630&fit=crop",
+      coverImage:
+        "https://res.cloudinary.com/dqfeqh7s4/image/upload/v1767487009/cld-sample-5.jpg",
       published: true,
       publishedAt: new Date("2026-01-01"),
       metaTitle: "Getting Started with Next.js 16 and Better Auth",
-      metaDescription: "Learn how to build a modern web application with Next.js 16 App Router and Better Auth for authentication.",
+      metaDescription:
+        "Learn how to build a modern web application with Next.js 16 App Router and Better Auth for authentication.",
       metaKeywords: "nextjs, better-auth, authentication, react, typescript",
       authorId: user.id,
     },
     {
       title: "Building a Blog with Prisma and PostgreSQL",
       slug: "building-blog-prisma-postgresql",
-      excerpt: "Discover how to create a scalable blog platform using Prisma ORM and PostgreSQL database.",
+      excerpt:
+        "Discover how to create a scalable blog platform using Prisma ORM and PostgreSQL database.",
       content: `# Building a Blog with Prisma and PostgreSQL
 
 In this post, we'll explore how to build a robust blog platform using modern tools.
@@ -117,18 +123,21 @@ const posts = await prisma.post.findMany({
 \`\`\`
 
 Happy coding!`,
-      coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&h=630&fit=crop",
+      coverImage:
+        "https://res.cloudinary.com/dqfeqh7s4/image/upload/v1767487009/cld-sample-5.jpg",
       published: true,
       publishedAt: new Date("2026-01-02"),
       metaTitle: "Building a Blog with Prisma and PostgreSQL",
-      metaDescription: "Discover how to create a scalable blog platform using Prisma ORM and PostgreSQL database.",
+      metaDescription:
+        "Discover how to create a scalable blog platform using Prisma ORM and PostgreSQL database.",
       metaKeywords: "prisma, postgresql, database, orm, blog",
       authorId: user.id,
     },
     {
       title: "Modern UI Development with shadcn/ui and Tailwind CSS 4",
       slug: "modern-ui-shadcn-tailwind-css-4",
-      excerpt: "Explore the latest in UI development with shadcn/ui components and Tailwind CSS 4's new features.",
+      excerpt:
+        "Explore the latest in UI development with shadcn/ui components and Tailwind CSS 4's new features.",
       content: `# Modern UI Development with shadcn/ui and Tailwind CSS 4
 
 Let's dive into building beautiful, accessible user interfaces with modern tools.
@@ -174,18 +183,21 @@ export function MyComponent() {
 ## Conclusion
 
 With shadcn/ui and Tailwind CSS 4, you can build professional UIs faster than ever before.`,
-      coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&h=630&fit=crop",
+      coverImage:
+        "https://res.cloudinary.com/dqfeqh7s4/image/upload/v1767487009/cld-sample-5.jpg",
       published: true,
       publishedAt: new Date("2026-01-03"),
       metaTitle: "Modern UI Development with shadcn/ui and Tailwind CSS 4",
-      metaDescription: "Explore the latest in UI development with shadcn/ui components and Tailwind CSS 4's new features.",
+      metaDescription:
+        "Explore the latest in UI development with shadcn/ui components and Tailwind CSS 4's new features.",
       metaKeywords: "shadcn, tailwindcss, ui, react, components",
       authorId: user.id,
     },
     {
       title: "Draft: Image Optimization with Cloudinary",
       slug: "draft-image-optimization-cloudinary",
-      excerpt: "A comprehensive guide to optimizing images using Cloudinary CDN and transformations.",
+      excerpt:
+        "A comprehensive guide to optimizing images using Cloudinary CDN and transformations.",
       content: `# Image Optimization with Cloudinary (Draft)
 
 This is a draft post about image optimization strategies...
@@ -198,11 +210,13 @@ This is a draft post about image optimization strategies...
 - On-the-fly transformations
 
 Stay tuned!`,
-      coverImage: "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=1200&h=630&fit=crop",
+      coverImage:
+        "https://res.cloudinary.com/dqfeqh7s4/image/upload/v1767487009/cld-sample-5.jpg",
       published: false,
       publishedAt: null,
       metaTitle: "Image Optimization with Cloudinary",
-      metaDescription: "Learn how to optimize images for the web using Cloudinary.",
+      metaDescription:
+        "Learn how to optimize images for the web using Cloudinary.",
       authorId: user.id,
     },
   ];
@@ -215,7 +229,11 @@ Stay tuned!`,
       update: {},
       create: post,
     });
-    console.log(`   ✅ Created: ${created.title} (${created.published ? "Published" : "Draft"})`);
+    console.log(
+      `   ✅ Created: ${created.title} (${
+        created.published ? "Published" : "Draft"
+      })`
+    );
   }
 
   console.log("\n🎉 Database seeded successfully!");
