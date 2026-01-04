@@ -10,107 +10,127 @@ import type { PostFormData, PostUpdateData } from "@/lib/schemas/post";
 import type { Post } from "@/generated/prisma/client";
 import type { PostWithAuthor } from "@/types/post";
 
-export async function createPost(data: PostFormData) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    throw new Error("Unauthorized");
+export async function createPost(data: PostFormData): Promise<{ success: boolean; postId?: string; error?: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const validated = postSchema.parse(data);
+
+    const post = await prisma.post.create({
+      data: {
+        ...validated,
+        authorId: session.user.id,
+        publishedAt: validated.published ? new Date() : null,
+      },
+    });
+
+    revalidatePath("/dashboard/posts");
+    if (validated.published) {
+      revalidatePath("/");
+      revalidatePath("/blog");
+    }
+
+    return { success: true, postId: post.id };
+  } catch (error) {
+    console.error("Create post error:", error);
+    return { success: false, error: "Failed to create post" };
   }
-
-  const validated = postSchema.parse(data);
-
-  const post = await prisma.post.create({
-    data: {
-      ...validated,
-      authorId: session.user.id,
-      publishedAt: validated.published ? new Date() : null,
-    },
-  });
-
-  revalidatePath("/dashboard/posts");
-  if (validated.published) {
-    revalidatePath("/");
-    revalidatePath("/blog");
-  }
-  
-  redirect(`/dashboard/posts/${post.id}/edit`);
 }
 
-export async function updatePost(id: string, data: PostUpdateData): Promise<Post> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    throw new Error("Unauthorized");
+export async function updatePost(id: string, data: PostUpdateData): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Check ownership
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing || existing.authorId !== session.user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const validated = postUpdateSchema.parse(data);
+
+    const post = await prisma.post.update({
+      where: { id },
+      data: validated,
+    });
+
+    revalidatePath("/dashboard/posts");
+    revalidatePath(`/blog/${post.slug}`);
+    if (post.published) {
+      revalidatePath("/");
+      revalidatePath("/blog");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update post error:", error);
+    return { success: false, error: "Failed to update post" };
   }
-
-  // Check ownership
-  const existing = await prisma.post.findUnique({ where: { id } });
-  if (!existing || existing.authorId !== session.user.id) {
-    throw new Error("Unauthorized");
-  }
-
-  const validated = postUpdateSchema.parse(data);
-
-  const post = await prisma.post.update({
-    where: { id },
-    data: validated,
-  });
-
-  revalidatePath("/dashboard/posts");
-  revalidatePath(`/blog/${post.slug}`);
-  if (post.published) {
-    revalidatePath("/");
-    revalidatePath("/blog");
-  }
-
-  return post;
 }
 
-export async function deletePost(id: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    throw new Error("Unauthorized");
+export async function deletePost(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing || existing.authorId !== session.user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await prisma.post.delete({ where: { id } });
+
+    revalidatePath("/dashboard/posts");
+    if (existing.published) {
+      revalidatePath("/");
+      revalidatePath("/blog");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete post error:", error);
+    return { success: false, error: "Failed to delete post" };
   }
-
-  const existing = await prisma.post.findUnique({ where: { id } });
-  if (!existing || existing.authorId !== session.user.id) {
-    throw new Error("Unauthorized");
-  }
-
-  await prisma.post.delete({ where: { id } });
-
-  revalidatePath("/dashboard/posts");
-  if (existing.published) {
-    revalidatePath("/");
-    revalidatePath("/blog");
-  }
-
-  redirect("/dashboard/posts");
 }
 
-export async function togglePublish(id: string): Promise<Post> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    throw new Error("Unauthorized");
+export async function togglePublish(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing || existing.authorId !== session.user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        published: !existing.published,
+        publishedAt: !existing.published ? new Date() : existing.publishedAt,
+      },
+    });
+
+    revalidatePath("/dashboard/posts");
+    revalidatePath(`/blog/${post.slug}`);
+    revalidatePath("/");
+    revalidatePath("/blog");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Toggle publish error:", error);
+    return { success: false, error: "Failed to toggle publish status" };
   }
-
-  const existing = await prisma.post.findUnique({ where: { id } });
-  if (!existing || existing.authorId !== session.user.id) {
-    throw new Error("Unauthorized");
-  }
-
-  const post = await prisma.post.update({
-    where: { id },
-    data: {
-      published: !existing.published,
-      publishedAt: !existing.published ? new Date() : existing.publishedAt,
-    },
-  });
-
-  revalidatePath("/dashboard/posts");
-  revalidatePath(`/blog/${post.slug}`);
-  revalidatePath("/");
-  revalidatePath("/blog");
-
-  return post;
 }
 
 export async function getUserPosts(): Promise<PostWithAuthor[]> {

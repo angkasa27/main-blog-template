@@ -1,0 +1,1 @@
+export { PostsListContainer } from "./container";

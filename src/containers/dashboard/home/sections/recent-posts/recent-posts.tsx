@@ -1,0 +1,77 @@
+import Link from "next/link";
+import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Pencil } from "lucide-react";
+import type { PostWithAuthor } from "@/types/post";
+
+interface RecentPostsProps {
+  posts: PostWithAuthor[];
+}
+
+export function RecentPosts({ posts }: RecentPostsProps) {
+  if (posts.length === 0) {
+    return (
+      <div className="rounded-lg border bg-card p-8 text-center">
+        <p className="text-muted-foreground">
+          No posts yet. Create your first post to get started!
+        </p>
+        <Link href="/dashboard/posts/new">
+          <Button className="mt-4">Create Post</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {posts.map((post) => (
+            <TableRow key={post.id}>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/dashboard/posts/${post.id}/edit`}
+                  className="hover:underline"
+                >
+                  {post.title}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <Badge variant={post.published ? "default" : "secondary"}>
+                  {post.published ? "Published" : "Draft"}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDate(post.createdAt)}
+              </TableCell>
+              <TableCell className="text-right">
+                <Link href={`/dashboard/posts/${post.id}/edit`}>
+                  <Button variant="ghost" size="sm">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
