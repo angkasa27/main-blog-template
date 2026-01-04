@@ -14,10 +14,16 @@ interface ImageUploadProps {
 export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
 
+  const resetScroll = () => {
+    // Fix scroll lock issue after widget closes
+    document.body.style.overflow = "";
+    document.body.style.position = "";
+  };
+
   return (
     <div className="space-y-4">
       {value ? (
-        <div className="relative w-full h-64 rounded-lg overflow-hidden border">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
           <CldImage
             src={value}
             alt="Cover image"
@@ -38,19 +44,67 @@ export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
       ) : (
         <CldUploadWidget
           uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+          options={{
+            multiple: false,
+            maxFiles: 1,
+            sources: ["local", "url", "camera"],
+            clientAllowedFormats: ["png", "jpg", "jpeg", "gif", "webp"],
+            maxFileSize: 10485760, // 10MB
+            maxImageWidth: 2000,
+            maxImageHeight: 2000,
+            cropping: true,
+            croppingAspectRatio: 16 / 9,
+            croppingShowDimensions: true,
+            showSkipCropButton: true,
+            styles: {
+              palette: {
+                window: "#ffffff",
+                sourceBg: "#f4f4f5",
+                windowBorder: "#90a0b0",
+                tabIcon: "#000000",
+                inactiveTabIcon: "#555a5f",
+                menuIcons: "#555a5f",
+                link: "#0078FF",
+                action: "#339933",
+                inProgress: "#0078FF",
+                complete: "#339933",
+                error: "#cc0000",
+                textDark: "#000000",
+                textLight: "#fcfffd",
+              },
+              fonts: {
+                default: null,
+                "'Poppins', sans-serif": {
+                  url: "https://fonts.googleapis.com/css?family=Poppins",
+                  active: true,
+                },
+              },
+            },
+          }}
           onSuccess={(result) => {
-            if (typeof result.info === "object" && "secure_url" in result.info) {
+            if (
+              typeof result.info === "object" &&
+              "secure_url" in result.info
+            ) {
               onChange(result.info.secure_url);
               setIsUploading(false);
+              resetScroll();
             }
           }}
-          onQueuesEnd={() => setIsUploading(false)}
+          onQueuesEnd={() => {
+            setIsUploading(false);
+            resetScroll();
+          }}
+          onClose={() => {
+            setIsUploading(false);
+            resetScroll();
+          }}
         >
           {({ open }) => (
             <Button
               type="button"
               variant="outline"
-              className="w-full h-64 border-dashed"
+              className="w-full aspect-video h-full border-dashed"
               onClick={() => {
                 setIsUploading(true);
                 open();

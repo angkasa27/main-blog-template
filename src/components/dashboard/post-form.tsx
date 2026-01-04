@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { postSchema, type PostFormData } from "@/lib/schemas/post";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,9 @@ import { ImageUpload } from "./image-upload";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { Loader2 } from "lucide-react";
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from "next/navigation";
+import { usePreventNavigation } from "@/hooks/use-prevent-navigation";
+import { useConfirm } from "@/hooks/use-confirm-dialog";
 
 interface PostFormProps {
   defaultValues?: Partial<PostFormData>;
@@ -31,7 +35,7 @@ export function PostForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
     setValue,
     watch,
   } = useForm<PostFormData>({
@@ -47,6 +51,54 @@ export function PostForm({
       published: false,
     },
   });
+
+  const router = useRouter();
+  const { confirm } = useConfirm();
+
+  // Prevent navigation when form has unsaved changes
+  usePreventNavigation(isDirty && !isSubmitting, "You have unsaved changes. Are you sure you want to leave?");
+
+  // Warn before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty, isSubmitting]);
+
+  // Intercept browser back/forward navigation
+  useEffect(() => {
+    if (!isDirty || isSubmitting) return;
+
+    const handlePopState = async (e: PopStateEvent) => {
+      e.preventDefault();
+      
+      const confirmLeave = await confirm({
+        title: "Unsaved Changes",
+        description: "You have unsaved changes. Are you sure you want to leave?",
+      });
+      
+      if (!confirmLeave) {
+        window.history.pushState(null, "", window.location.href);
+      } else {
+        window.history.back();
+      }
+    };
+
+    // Push a new state to handle back button
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isDirty, isSubmitting, confirm]);
 
   const coverImage = watch("coverImage");
 
