@@ -29,9 +29,10 @@ export function RecentPosts({ posts }: RecentPostsProps) {
         <p className="text-muted-foreground">
           No posts yet. Create your first post to get started!
         </p>
-        <Link href="/dashboard/posts/new">
-          <Button className="mt-4">Create Post</Button>
-        </Link>
+        <Button
+          className="mt-4"
+          render={<Link href="/dashboard/posts/new">Create Post</Link>}
+        />
       </div>
     );
   }
