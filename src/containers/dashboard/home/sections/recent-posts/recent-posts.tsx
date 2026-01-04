@@ -12,6 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Pencil } from "lucide-react";
 import type { PostWithAuthor } from "@/types/post";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface RecentPostsProps {
   posts: PostWithAuthor[];
@@ -59,14 +64,25 @@ export function RecentPosts({ posts }: RecentPostsProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(post.createdAt)}
+                {formatDate(post.createdAt, "d MMMM yyyy, HH:mm")}
               </TableCell>
-              <TableCell className="text-right">
-                <Link href={`/dashboard/posts/${post.id}/edit`}>
-                  <Button variant="ghost" size="sm">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </Link>
+              <TableCell className="flex justify-end">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        render={
+                          <Link href={`/dashboard/posts/${post.id}/edit`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        }
+                      />
+                    }
+                  />
+                  <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

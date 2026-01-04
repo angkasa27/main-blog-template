@@ -1,6 +1,7 @@
 "use client";
 import { CldImage } from "next-cloudinary";
 import { formatDate } from "@/lib/utils";
+import { formatISO } from "date-fns";
 import type { PostWithAuthor } from "@/types/post";
 
 interface HeaderProps {
@@ -22,7 +23,7 @@ export function Header({ post }: HeaderProps) {
             </span>
           </div>
           <span>•</span>
-          <time dateTime={post.publishedAt?.toISOString()}>
+          <time dateTime={post.publishedAt ? formatISO(post.publishedAt) : formatISO(post.createdAt)}>
             {post.publishedAt ? formatDate(post.publishedAt) : formatDate(post.createdAt)}
           </time>
         </div>

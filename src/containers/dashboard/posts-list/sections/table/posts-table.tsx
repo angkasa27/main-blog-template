@@ -13,11 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { Pencil, Trash2, Archive, ArchiveRestore, Eye } from "lucide-react";
 import type { PostWithAuthor } from "@/types/post";
 import { togglePublish } from "@/app/actions/posts";
 import { useRouter } from "next/navigation";
 import { DeleteConfirmation } from "@/components/dashboard/delete-confirmation";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PostsTableProps {
   posts: PostWithAuthor[];
@@ -43,11 +49,11 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
       const result = await togglePublish(postId);
       if (result.success) {
         // Update local state
-        setPosts(posts.map(post => 
-          post.id === postId 
-            ? { ...post, published: !post.published }
-            : post
-        ));
+        setPosts(
+          posts.map((post) =>
+            post.id === postId ? { ...post, published: !post.published } : post
+          )
+        );
       }
     } catch (error) {
       console.error("Failed to toggle publish:", error);
@@ -99,46 +105,95 @@ export function PostsTable({ posts: initialPosts }: PostsTableProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(post.createdAt)}
+                {formatDate(post.createdAt, "d MMMM yyyy, HH:mm")}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(post.updatedAt)}
+                {formatDate(post.updatedAt, "d MMMM yyyy, HH:mm")}
               </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleTogglePublish(post.id)}
-                    disabled={loadingId === post.id}
-                    title={post.published ? "Unpublish" : "Publish"}
-                  >
-                    {post.published ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Link href={`/dashboard/posts/${post.id}/edit`}>
-                    <Button variant="ghost" size="sm">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() =>
-                      setDeleteDialog({
-                        isOpen: true,
-                        postId: post.id,
-                        postTitle: post.title,
-                      })
-                    }
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+              <TableCell className="flex justify-end">
+                <ButtonGroup>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          nativeButton={false}
+                          size="sm"
+                          variant="secondary"
+                          disabled={!post.published}
+                          render={
+                            <Link
+                              href={`/blog/${post.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          }
+                        />
+                      }
+                    />
+                    <TooltipContent>View</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          size="sm"
+                          onClick={() => handleTogglePublish(post.id)}
+                          variant="secondary"
+                          disabled={loadingId === post.id}
+                          title={post.published ? "Unpublish" : "Publish"}
+                        >
+                          {post.published ? (
+                            <Archive className="h-4 w-4" />
+                          ) : (
+                            <ArchiveRestore className="h-4 w-4" />
+                          )}
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>
+                      {post.published ? "Unpublish" : "Publish"}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          render={
+                            <Link href={`/dashboard/posts/${post.id}/edit`}>
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          }
+                        />
+                      }
+                    />
+                    <TooltipContent>Edit</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() =>
+                            setDeleteDialog({
+                              isOpen: true,
+                              postId: post.id,
+                              postTitle: post.title,
+                            })
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>Delete</TooltipContent>
+                  </Tooltip>
+                </ButtonGroup>
               </TableCell>
             </TableRow>
           ))}

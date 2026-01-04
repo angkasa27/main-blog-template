@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CldImage } from "next-cloudinary";
 import type { PostListItem } from "@/types/post";
 import { formatDate } from "@/lib/utils";
+import { formatISO } from "date-fns";
 
 interface PostCardProps {
   post: PostListItem;
@@ -40,7 +41,7 @@ export function PostCard({ post }: PostCardProps) {
         <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-500">
           <span>{post.author.name}</span>
           <span>•</span>
-          <time dateTime={post.publishedAt?.toISOString()}>
+          <time dateTime={post.publishedAt ? formatISO(post.publishedAt) : formatISO(post.createdAt)}>
             {post.publishedAt ? formatDate(post.publishedAt) : formatDate(post.createdAt)}
           </time>
         </div>
