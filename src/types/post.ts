@@ -7,7 +7,7 @@ export type PostWithAuthor = Post & {
 
 export type PostListItem = Pick<
   Post,
-  "id" | "title" | "slug" | "excerpt" | "coverImage" | "published" | "publishedAt" | "createdAt" | "updatedAt"
+  "id" | "title" | "slug" | "excerpt" | "coverImage" | "published" | "publishedAt" | "createdAt" | "updatedAt" | "viewCount"
 > & {
   author: Pick<User, "id" | "name" | "email" | "image">;
   tags?: Array<{ tag: Tag }>;
