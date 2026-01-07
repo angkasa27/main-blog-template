@@ -88,9 +88,9 @@ model Post {
   publishedAt DateTime?
 
   // Featured posts and view tracking
-  featured    Boolean   @default(false)
-  featuredAt  DateTime?
-  viewCount   Int       @default(0)
+  featured   Boolean   @default(false)
+  featuredAt DateTime?
+  viewCount  Int       @default(0)
 
   // SEO fields
   metaTitle       String?
